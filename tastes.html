@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мои вкусы </title>
+<style>
+  :root {
+    --accent: #d4a574;
+    --accent-hover: #e0b88a;
+    --bg-dark: #1c1c1e;
+    --bg-card: #2c2c2e;
+    --bg-item: #3a3a3c;
+    --text-main: #e8e8ed;
+    --text-muted: #a1a1a6;
+    --border: #3a3a3c;
+    --danger: #ff6b6b;
+    --success: #6fcf97;
+    --gold: #ffd700;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: linear-gradient(160deg, var(--bg-dark) 0%, #2c2c2e 40%, var(--bg-dark) 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: var(--text-main);
+  }
+
+  .container { max-width: 820px; margin: 0 auto; }
+
+  header { text-align: center; margin-bottom: 30px; color: #f5f5f7; }
+  header h1 { font-size: 2.4rem; margin-bottom: 6px; letter-spacing: -0.5px; }
+  header p { font-size: 1.05rem; color: var(--text-muted); }
+
+  .card {
+    background: var(--bg-card);
+    border-radius: 18px;
+    padding: 24px;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+    border: 1px solid var(--border);
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+
+  .input-group label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+  .input-field {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-dark);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-main);
+    font-size: 1.05rem;
+    font-weight: 600;
+    outline: none;
+    transition: border 0.2s;
+  }
+  .input-field:focus { border-color: var(--accent); }
+  .input-field::placeholder { color: #636366; }
+
+  .color-picker {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .color-picker label { font-size: 0.9rem; color: var(--text-muted); margin-right: 8px; }
+  .color-swatch {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .color-swatch:hover { transform: scale(1.15); }
+  .color-swatch.active { border-color: #fff; box-shadow: 0 0 0 2px var(--bg-card); }
+  .color-custom {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
+    cursor: pointer;
+    padding: 0;
+    overflow: hidden;
+  }
+  .color-custom::-webkit-color-swatch-wrapper { padding: 0; }
+  .color-custom::-webkit-color-swatch { border: none; border-radius: 50%; }
+
+  .hint-box {
+    background: rgba(212, 165, 116, 0.06);
+    border: 1px dashed var(--accent);
+    border-radius: 14px;
+    margin-bottom: 18px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  .hint-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    color: var(--accent);
+    font-size: 0.95rem;
+    font-weight: 600;
+    gap: 8px;
+    transition: background 0.2s;
+  }
+  .hint-header:hover { background: rgba(212, 165, 116, 0.06); }
+  .hint-header .hint-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .hint-toggle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    transition: transform 0.3s;
+  }
+  .hint-box.collapsed .hint-toggle { transform: rotate(-90deg); }
+
+  .hint-body {
+    padding: 0 16px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    max-height: 400px;
+    overflow: hidden;
+    transition: max-height 0.35s ease, padding 0.35s ease, opacity 0.3s ease;
+    opacity: 1;
+  }
+  .hint-box.collapsed .hint-body {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+  }
+
+  .hint-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg-dark);
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .hint-item:hover {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .hint-item .hint-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    width: 32px;
+    text-align: center;
+  }
+  .hint-item .hint-text {
+    font-size: 0.88rem;
+    color: var(--text-main);
+    line-height: 1.4;
+  }
+  .hint-item .hint-text strong {
+    color: var(--accent);
+    display: block;
+    margin-bottom: 3px;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    font-weight: 700;
+  }
+
+  .hint-dismiss {
+    display: block;
+    margin: 0 16px 14px;
+    padding: 7px 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: fit-content;
+  }
+  .hint-dismiss:hover {
+    background: var(--bg-item);
+    color: var(--text-main);
+    border-color: var(--accent);
+  }
+
+  .notes-section { margin-bottom: 20px; }
+  .notes-textarea {
+    width: 100%; min-height: 80px;
+    padding: 12px 16px;
+    background: var(--bg-dark);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-main);
+    font-size: 0.95rem;
+    font-family: inherit;
+    line-height: 1.5;
+    outline: none;
+    resize: vertical;
+    transition: border 0.2s;
+  }
+  .notes-textarea:focus { border-color: var(--accent); }
+
+  .view-header { text-align: center; margin-bottom: 20px; }
+  .view-name { font-size: 1.6rem; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .view-dob { font-size: 1rem; color: var(--text-muted); margin-bottom: 16px; }
+  .view-notes {
+    background: #232325; border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 18px;
+    color: #c7c7cc; font-size: 0.95rem; line-height: 1.6;
+    white-space: pre-wrap; word-wrap: break-word;
+    text-align: left; margin-bottom: 20px;
+  }
+  .view-notes::before {
+    content: '📝 Примечания';
+    display: block; color: var(--accent);
+    font-weight: 600; font-size: 0.85rem;
+    text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .category {
+    background: #232325;
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    border-left: 4px solid var(--accent);
+    transition: background 0.2s;
+  }
+  .category:hover { background: #2a2a2d; }
+  .category h3 {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px; color: var(--accent);
+    font-size: 1.1rem; font-weight: 600;
+  }
+  .emoji { font-size: 1.4rem; }
+
+  .items { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; min-height: 28px; }
+
+  .item {
+    background: var(--bg-item);
+    color: var(--text-main);
+    padding: 5px 10px;
+    border-radius: 18px;
+    font-size: 0.9rem;
+    display: flex; align-items: center; gap: 6px;
+    animation: pop 0.2s ease;
+    border: 1px solid #48484a;
+  }
+  .item.priority { border-color: var(--gold); background: rgba(255, 215, 0, 0.1); }
+  .item.priority .item-text { color: var(--gold); font-weight: 600; }
+  .item.dislike { border-color: var(--danger); background: rgba(255, 107, 107, 0.1); }
+  .item.dislike .item-text { text-decoration: line-through; color: var(--danger); }
+
+  @keyframes pop {
+    from { transform: scale(0.85); opacity: 0; }
+    to   { transform: scale(1);    opacity: 1; }
+  }
+
+  .item-controls { display: flex; gap: 4px; align-items: center; }
+  .item-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 1rem; padding: 2px;
+    opacity: 0.6; transition: opacity 0.2s, transform 0.1s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .item-btn:hover { opacity: 1; transform: scale(1.2); }
+  .item-btn.remove { color: var(--danger); }
+  .item-btn.like-active { opacity: 1; }
+  .item-btn.dislike-active { opacity: 1; }
+  .item-btn.star-active { opacity: 1; }
+
+  .add-row { display: flex; gap: 8px; }
+  .add-row input {
+    flex: 1; padding: 8px 12px;
+    background: var(--bg-dark);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-main);
+    font-size: 0.92rem; outline: none;
+    transition: border 0.2s;
+  }
+  .add-row input:focus { border-color: var(--accent); }
+  .add-row button {
+    padding: 8px 16px; background: var(--accent);
+    color: var(--bg-dark); border: none;
+    border-radius: 10px; cursor: pointer;
+    font-weight: 700; font-size: 1.05rem;
+    transition: background 0.2s, transform 0.1s;
+  }
+  .add-row button:hover { background: var(--accent-hover); }
+  .add-row button:active { transform: scale(0.95); }
+
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+  .btn {
+    flex: 1; min-width: 140px;
+    padding: 12px 18px; border: none;
+    border-radius: 12px; font-size: 0.95rem;
+    font-weight: 600; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent); color: var(--bg-dark); }
+  .btn-primary:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(212,165,116,0.25);
+  }
+  .btn-secondary { background: var(--bg-item); color: var(--text-main); border: 1px solid #48484a; }
+  .btn-secondary:hover { background: #48484a; }
+  .btn-danger { background: transparent; color: var(--danger); border: 1px solid #5a3a3a; }
+  .btn-danger:hover { background: rgba(255,107,107,0.1); }
+
+  .share-box {
+    margin-top: 15px; padding: 15px;
+    background: #1e3a2a; border-radius: 12px;
+    border: 1px solid #2a5a3a; display: none;
+  }
+  .share-box.visible { display: block; }
+  .share-box label { font-weight: 600; color: var(--success); display: block; margin-bottom: 8px; }
+  .share-box .url-display {
+    width: 100%; padding: 10px;
+    border: 1px solid #2a5a3a; border-radius: 8px;
+    font-size: 0.82rem; word-break: break-all;
+    background: var(--bg-dark); color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  .view-mode .card { text-align: center; }
+  .view-mode .category { text-align: left; }
+  .view-mode .items { justify-content: flex-start; }
+  .view-mode .add-row { display: none; }
+  .view-mode .item-controls { display: none; }
+
+  .empty-hint { color: #636366; font-style: italic; font-size: 0.88rem; }
+
+  .toast {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--bg-item); color: #f5f5f7;
+    padding: 12px 24px; border-radius: 25px;
+    opacity: 0; transition: all 0.3s; z-index: 1000;
+    border: 1px solid #48484a;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .confetti-piece {
+    position: fixed; width: 8px; height: 8px;
+    border-radius: 50%; z-index: 9999;
+    pointer-events: none;
+    transition: all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .section-divider {
+    text-align: center; color: #636366;
+    font-size: 0.8rem; text-transform: uppercase;
+    letter-spacing: 2px; margin: 22px 0 14px;
+    position: relative;
+  }
+  .section-divider::before, .section-divider::after {
+    content: ''; position: absolute; top: 50%;
+    width: 30%; height: 1px; background: var(--border);
+  }
+  .section-divider::before { left: 0; }
+  .section-divider::after  { right: 0; }
+
+  .footer-links {
+    display: flex; justify-content: center;
+    gap: 16px; margin-top: 28px; flex-wrap: wrap;
+  }
+  .footer-link {
+    display: flex; align-items: center; gap: 8px;
+    color: var(--text-muted); text-decoration: none;
+    font-size: 0.9rem; font-weight: 500;
+    padding: 10px 18px; border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    transition: all 0.25s ease;
+  }
+  .footer-link:hover {
+    background: var(--bg-item); color: #f5f5f7;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .footer-link.boosty:hover { border-color: #f15f2c; color: #f15f2c; }
+  .footer-link.telegram:hover { border-color: #2aabee; color: #2aabee; }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.7rem; }
+    .card { padding: 16px; }
+    .btn { min-width: 100%; }
+    .view-name { font-size: 1.3rem; }
+    .footer-links { flex-direction: column; align-items: stretch; }
+    .footer-link { justify-content: center; }
+    .hint-body { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>🍰 Мои вкусы</h1>
+    <p id="subtitle">Собери список своих любимостей и поделись с друзьями</p>
+  </header>
+  <div id="app"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const CATEGORIES = [
+  { id: 'tea',       name: 'Чай',               emoji: '🍵', group: 'Напитки' },
+  { id: 'coffee',    name: 'Кофе',              emoji: '☕', group: 'Напитки' },
+  { id: 'drinks',    name: 'Безалкогольные напитки', emoji: '🥤', group: 'Напитки' },
+  { id: 'alcohol',   name: 'Алкоголь',          emoji: '🍷', group: 'Напитки' },
+  { id: 'fruits',    name: 'Фрукты',            emoji: '🍎', group: 'Фрукты и ягоды' },
+  { id: 'berries',   name: 'Ягоды',             emoji: '🍓', group: 'Фрукты и ягоды' },
+  { id: 'sweets',    name: 'Сладости и конфеты', emoji: '🍬', group: 'Сладкое' },
+  { id: 'chocolate', name: 'Шоколад',           emoji: '🍫', group: 'Сладкое' },
+  { id: 'pastry',    name: 'Выпечка и торты',   emoji: '🥐', group: 'Сладкое' },
+  { id: 'icecream',  name: 'Мороженое',         emoji: '🍦', group: 'Сладкое' },
+  { id: 'snacks',    name: 'Чипсы и снеки',     emoji: '🥨', group: 'Снеки' },
+  { id: 'nuts',      name: 'Орехи и сухофрукты', emoji: '🥜', group: 'Снеки' },
+  { id: 'cheese',    name: 'Сыры',              emoji: '🧀', group: 'Еда' },
+  { id: 'meat',      name: 'Мясные деликатесы', emoji: '🥩', group: 'Еда' },
+  { id: 'seafood',   name: 'Морепродукты',      emoji: '🦐', group: 'Еда' },
+  { id: 'sushi',     name: 'Суши и роллы',      emoji: '🍣', group: 'Еда' },
+  { id: 'fastfood',  name: 'Фастфуд',           emoji: '🍔', group: 'Еда' },
+  { id: 'pizza',     name: 'Пицца',             emoji: '🍕', group: 'Еда' },
+  { id: 'dairy',     name: 'Молочные продукты', emoji: '🥛', group: 'Прочее' },
+  { id: 'sauces',    name: 'Соусы и специи',    emoji: '🌶️', group: 'Прочее' },
+  { id: 'other',     name: 'Другое',            emoji: '🎁', group: 'Прочее' },
+];
+
+const COLORS = ['#d4a574', '#2aabee', '#6fcf97', '#ff6b6b', '#a855f7', '#f59e0b'];
+const HINT_STORAGE_KEY = 'myTastesHintDismissed';
+let data = {};
+let mode = 'edit';
+
+function encodeBase64(str) {
+  const utf8Bytes = encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (m, p1) => String.fromCharCode(parseInt(p1, 16)));
+  return btoa(utf8Bytes);
+}
+function decodeBase64(b64) {
+  const binary = atob(b64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new TextDecoder('utf-8').decode(bytes);
+}
+
+function normalizeData(raw) {
+  const d = { 
+    name: raw?.name || '', 
+    dob: raw?.dob || '', 
+    notes: raw?.notes || '', 
+    accentColor: raw?.accentColor || '#d4a574', 
+    _draft: false 
+  };
+  CATEGORIES.forEach(cat => {
+    if (Array.isArray(raw?.[cat.id])) {
+      d[cat.id] = raw[cat.id].map(item => {
+        if (typeof item === 'string') return { text: item, like: true, priority: false };
+        return { text: item.text || '', like: item.like !== false, priority: item.priority || false };
+      }).filter(item => item.text.trim() !== '');
+    } else {
+      d[cat.id] = [];
+    }
+  });
+  return d;
+}
+
+function loadDataFromURL() {
+  const hash = window.location.hash.slice(1);
+  if (!hash) return null;
+  try {
+    const b64 = hash.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = b64 + '='.repeat((4 - b64.length % 4) % 4);
+    return normalizeData(JSON.parse(decodeBase64(padded)));
+  } catch (e) { return null; }
+}
+
+function saveDataToURL() {
+  const json = JSON.stringify(data);
+  const b64 = encodeBase64(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  history.replaceState(null, '', location.pathname + location.search + '#' + b64);
+  return location.href;
+}
+
+function clearURL() {
+  history.replaceState(null, '', location.pathname + location.search);
+}
+
+function saveToLocalStorage() {
+  localStorage.setItem('myTastesDraft', JSON.stringify(data));
+}
+
+function loadFromLocalStorage() {
+  try {
+    const raw = localStorage.getItem('myTastesDraft');
+    return raw ? normalizeData(JSON.parse(raw)) : null;
+  } catch { return null; }
+}
+
+function clearLocalStorage() {
+  localStorage.removeItem('myTastesDraft');
+}
+
+const app = document.getElementById('app');
+const subtitle = document.getElementById('subtitle');
+
+function esc(s) {
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function formatDate(dob) {
+  if (!dob) return '';
+  const d = new Date(dob);
+  return d.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+}
+
+function render() {
+  document.documentElement.style.setProperty('--accent', data.accentColor || '#d4a574');
+  app.className = mode === 'view' ? 'view-mode' : '';
+  subtitle.textContent = mode === 'view'
+    ? 'Теперь друзья знают, что тебе подарить 🎁'
+    : 'Собери список своих любимостей и поделись с друзьями';
+
+  let html = '<div class="card">';
+
+  if (mode === 'edit') {
+    html += `<div class="form-row">
+      <div class="input-group">
+        <label for="nameInput">Как тебя зовут?</label>
+        <input class="input-field" id="nameInput" type="text" placeholder="Введи своё имя…" maxlength="50" value="${esc(data.name)}">
+      </div>
+      <div class="input-group">
+        <label for="dobInput">День рождения</label>
+        <input class="input-field" id="dobInput" type="date" value="${esc(data.dob)}">
+      </div>
+    </div>
+    <div class="color-picker">
+      <label>Цвет темы:</label>
+      ${COLORS.map(c => `<div class="color-swatch ${data.accentColor === c ? 'active' : ''}" style="background:${c}" data-color="${c}"></div>`).join('')}
+      <input type="color" class="color-custom" value="${data.accentColor}" id="customColor" title="Свой цвет">
+    </div>`;
+
+    const hintDismissed = localStorage.getItem(HINT_STORAGE_KEY) === '1';
+    html += `<div class="hint-box ${hintDismissed ? 'collapsed' : ''}" id="hintBox">
+      <div class="hint-header" id="hintHeader">
+        <div class="hint-title"> Подсказка: как отмечать вкусы</div>
+        <span class="hint-toggle">▼</span>
+      </div>
+      <div class="hint-body">
+        <div class="hint-item">
+          <div class="hint-icon">❤️</div>
+          <div class="hint-text">
+            <strong>Люблю</strong>
+            Это мне нравится — смело дарите
+          </div>
+        </div>
+        <div class="hint-item">
+          <div class="hint-icon">💔</div>
+          <div class="hint-text">
+            <strong>Не люблю</strong>
+            Лучше избегать, даже если кажется милым подарком
+          </div>
+        </div>
+        <div class="hint-item">
+          <div class="hint-icon">⭐</div>
+          <div class="hint-text">
+            <strong>В приоритете</strong>
+            Очень хочу! Топ желаний
+          </div>
+        </div>
+        <div class="hint-item">
+          <div class="hint-icon">☆</div>
+          <div class="hint-text">
+            <strong>Обычное</strong>
+            Просто нравится, без фанатизма
+          </div>
+        </div>
+      </div>
+      <button class="hint-dismiss" id="hintDismiss">Больше не показывать</button>
+    </div>`;
+
+    html += `<div class="notes-section">
+      <label for="notesInput" style="display:flex;align-items:center;gap:8px;font-size:0.9rem;color:var(--text-muted);margin-bottom:6px;font-weight:500;"> Общие примечания</label>
+      <textarea class="notes-textarea" id="notesInput" placeholder="Например: не люблю слишком сладкое, предпочитаю горький шоколад…" maxlength="500">${esc(data.notes)}</textarea>
+    </div>`;
+  } else {
+    const n = data.name ? esc(data.name) : 'Аноним';
+    const dob = data.dob ? formatDate(data.dob) : '';
+    html += `<div class="view-header">
+      <div class="view-name">✨ ${n} ✨</div>
+      ${dob ? `<div class="view-dob">🎂 День рождения: ${dob}</div>` : ''}
+      <div style="color:var(--text-muted);font-size:0.95rem;">Вот что я люблю (и не очень)</div>
+    </div>`;
+    if (data.notes && data.notes.trim()) {
+      html += `<div class="view-notes">${esc(data.notes)}</div>`;
+    }
+  }
+
+  let currentGroup = '';
+  CATEGORIES.forEach(cat => {
+    if (cat.group !== currentGroup) {
+      currentGroup = cat.group;
+      html += `<div class="section-divider">${esc(currentGroup)}</div>`;
+    }
+    const items = data[cat.id] || [];
+    html += `<div class="category">
+      <h3><span class="emoji">${cat.emoji}</span> ${esc(cat.name)}</h3>
+      <div class="items" data-cat="${cat.id}">`;
+    
+    if (!items.length) {
+      html += `<span class="empty-hint">Пока пусто…</span>`;
+    } else {
+      items.forEach((item, idx) => {
+        const isPriority = item.priority;
+        const isDislike = !item.like;
+        html += `<div class="item ${isPriority ? 'priority' : ''} ${isDislike ? 'dislike' : ''}">
+          <span class="item-text">${isPriority ? '⭐ ' : ''}${esc(item.text)}</span>
+          <div class="item-controls">
+            <button class="item-btn ${item.like ? 'like-active' : 'dislike-active'}" data-action="toggle-like" data-cat="${cat.id}" data-idx="${idx}" title="${item.like ? 'Люблю — нажать, чтобы перенести в нелюбимые' : 'Не люблю — нажать, чтобы вернуть в любимые'}">
+              ${item.like ? '❤️' : '💔'}
+            </button>
+            <button class="item-btn ${isPriority ? 'star-active' : ''}" data-action="toggle-priority" data-cat="${cat.id}" data-idx="${idx}" title="${isPriority ? 'В приоритете — нажать, чтобы убрать' : 'Отметить как очень желанное'}">
+              ${isPriority ? '⭐' : '☆'}
+            </button>
+            <button class="item-btn remove" data-action="remove" data-cat="${cat.id}" data-idx="${idx}" title="Удалить из списка">×</button>
+          </div>
+        </div>`;
+      });
+    }
+    html += `</div>`;
+    if (mode === 'edit') {
+      html += `<div class="add-row">
+        <input type="text" placeholder="Добавить…" data-input="${cat.id}" maxlength="60">
+        <button data-add="${cat.id}">+</button>
+      </div>`;
+    }
+    html += `</div>`;
+  });
+
+  html += '</div>';
+
+  if (mode === 'edit') {
+    html += `<div class="actions">
+      <button class="btn btn-primary" id="btnShare">🔗 Поделиться</button>
+      <button class="btn btn-secondary" id="btnExport">📄 В текст</button>
+      <button class="btn btn-secondary" id="btnPreview">👁 Предпросмотр</button>
+      <button class="btn btn-danger" id="btnReset">🗑 Очистить</button>
+    </div>
+    <div class="share-box" id="shareBox">
+      <label>📋 Твоя ссылка:</label>
+      <div class="url-display" id="urlDisplay"></div>
+      <button class="btn btn-primary" id="btnCopy"> Скопировать ссылку</button>
+    </div>`;
+  } else {
+    html += `<div class="actions">
+      <button class="btn btn-primary" id="btnEdit">✏️ Редактировать</button>
+      <button class="btn btn-secondary" id="btnNew">🆕 Создать свои</button>
+      <button class="btn btn-secondary" id="btnCopyView">📋 Скопировать ссылку</button>
+    </div>`;
+  }
+
+  html += `<div class="footer-links">
+    <a href="https://boosty.to/levetator" target="_blank" rel="noopener noreferrer" class="footer-link boosty">🚀 Поддержать на Boosty</a>
+    <a href="https://t.me/levetator" target="_blank" rel="noopener noreferrer" class="footer-link telegram">✈️ Написать в Telegram</a>
+  </div>`;
+
+  app.innerHTML = html;
+  bindEvents();
+}
+
+function bindEvents() {
+  const syncAndSave = () => {
+    const nameInp = document.getElementById('nameInput');
+    if (nameInp) data.name = nameInp.value.trim();
+    const dobInp = document.getElementById('dobInput');
+    if (dobInp) data.dob = dobInp.value;
+    const notesInp = document.getElementById('notesInput');
+    if (notesInp) data.notes = notesInp.value;
+    saveDataToURL();
+    saveToLocalStorage();
+  };
+
+  ['nameInput', 'dobInput', 'notesInput'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', syncAndSave);
+  });
+
+  const hintHeader = document.getElementById('hintHeader');
+  if (hintHeader) {
+    hintHeader.addEventListener('click', () => {
+      document.getElementById('hintBox').classList.toggle('collapsed');
+    });
+  }
+  const hintDismiss = document.getElementById('hintDismiss');
+  if (hintDismiss) {
+    hintDismiss.addEventListener('click', () => {
+      localStorage.setItem(HINT_STORAGE_KEY, '1');
+      document.getElementById('hintBox').classList.add('collapsed');
+      showToast('👍 Подсказка скрыта');
+    });
+  }
+
+  document.querySelectorAll('.color-swatch').forEach(el => {
+    el.addEventListener('click', () => {
+      data.accentColor = el.dataset.color;
+      document.getElementById('customColor').value = data.accentColor;
+      syncAndSave();
+      render();
+    });
+  });
+
+  document.getElementById('customColor')?.addEventListener('input', (e) => {
+    data.accentColor = e.target.value;
+    syncAndSave();
+    render();
+  });
+
+  app.querySelectorAll('[data-add]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cat = btn.dataset.add;
+      const inp = app.querySelector(`[data-input="${cat}"]`);
+      const val = inp.value.trim();
+      if (!val) return;
+      
+      const exists = data[cat].some(item => item.text.toLowerCase() === val.toLowerCase());
+      if (exists) {
+        showToast('⚠️ Уже есть в этом списке!');
+        inp.value = '';
+        return;
+      }
+
+      data[cat].push({ text: val, like: true, priority: false });
+      inp.value = '';
+      syncAndSave();
+      render();
+      const newInp = app.querySelector(`[data-input="${cat}"]`);
+      if (newInp) newInp.focus();
+    });
+  });
+
+  app.querySelectorAll('[data-input]').forEach(inp => {
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') app.querySelector(`[data-add="${inp.dataset.input}"]`).click();
+    });
+  });
+
+  app.querySelectorAll('.item-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const action = btn.dataset.action;
+      const cat = btn.dataset.cat;
+      const idx = +btn.dataset.idx;
+      
+      if (action === 'remove') {
+        data[cat].splice(idx, 1);
+      } else if (action === 'toggle-like') {
+        data[cat][idx].like = !data[cat][idx].like;
+      } else if (action === 'toggle-priority') {
+        data[cat][idx].priority = !data[cat][idx].priority;
+      }
+      syncAndSave();
+      render();
+    });
+  });
+
+  const $ = id => document.getElementById(id);
+
+  if ($('btnShare')) $('btnShare').onclick = () => {
+    syncAndSave();
+    $('urlDisplay').textContent = location.href;
+    $('shareBox').classList.add('visible');
+  };
+
+  if ($('btnCopy')) $('btnCopy').onclick = () => {
+    copyText($('urlDisplay').textContent);
+    fireConfetti();
+  };
+
+  if ($('btnExport')) $('btnExport').onclick = () => {
+    syncAndSave();
+    let text = `🍰 *Вкусы: ${data.name || 'Аноним'}*\n`;
+    if (data.dob) text += ` День рождения: ${formatDate(data.dob)}\n`;
+    if (data.notes) text += `📝 _${data.notes}_\n\n`;
+    
+    let currentGroup = '';
+    CATEGORIES.forEach(cat => {
+      const items = data[cat.id] || [];
+      if (!items.length) return;
+      if (cat.group !== currentGroup) {
+        currentGroup = cat.group;
+        text += `\n*${currentGroup}*\n`;
+      }
+      const likes = items.filter(i => i.like).map(i => (i.priority ? '⭐ ' : '') + i.text);
+      const dislikes = items.filter(i => !i.like).map(i => '🚫 ' + i.text);
+      
+      const parts = [];
+      if (likes.length) parts.push('✅ ' + likes.join(', '));
+      if (dislikes.length) parts.push(dislikes.join(', '));
+      
+      if (parts.length) text += `${cat.emoji} *${cat.name}*: ${parts.join(' | ')}\n`;
+    });
+    
+    copyText(text);
+    fireConfetti();
+    showToast('✅ Текст скопирован!');
+  };
+
+  if ($('btnPreview')) $('btnPreview').onclick = () => {
+    syncAndSave();
+    mode = 'view';
+    render();
+  };
+
+  if ($('btnReset')) $('btnReset').onclick = () => {
+    if (confirm('Удалить все данные и очистить ссылку?')) {
+      data = normalizeData({ accentColor: data.accentColor || '#d4a574' });
+      clearURL();
+      clearLocalStorage();
+      localStorage.removeItem(HINT_STORAGE_KEY);
+      mode = 'edit';
+      render();
+    }
+  };
+
+  if ($('btnEdit')) $('btnEdit').onclick = () => {
+    mode = 'edit';
+    render();
+    showToast('✏️ Режим редактирования');
+  };
+
+  if ($('btnNew')) $('btnNew').onclick = () => {
+    if (confirm('Создать новый список? Текущие данные будут потеряны.')) {
+      data = normalizeData({ accentColor: '#d4a574' });
+      clearURL();
+      clearLocalStorage();
+      localStorage.removeItem(HINT_STORAGE_KEY);
+      mode = 'edit';
+      render();
+    }
+  };
+
+  if ($('btnCopyView')) $('btnCopyView').onclick = () => {
+    copyText(location.href);
+    fireConfetti();
+  };
+}
+
+function copyText(text) {
+  navigator.clipboard.writeText(text).then(
+    () => showToast('✅ Скопировано!'),
+    () => {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('✅ Скопировано!');
+    }
+  );
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function fireConfetti() {
+  const colors = [getComputedStyle(document.documentElement).getPropertyValue('--accent').trim(), '#ff6b6b', '#6fcf97', '#f5f5f7', '#ffd700', '#a855f7'];
+  for (let i = 0; i < 60; i++) {
+    const el = document.createElement('div');
+    el.className = 'confetti-piece';
+    el.style.background = colors[Math.floor(Math.random() * colors.length)];
+    el.style.left = Math.random() * 100 + 'vw';
+    el.style.top = '-10px';
+    el.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    el.style.width = (Math.random() * 8 + 4) + 'px';
+    el.style.height = (Math.random() * 8 + 4) + 'px';
+    document.body.appendChild(el);
+    
+    requestAnimationFrame(() => {
+      el.style.transform = `translate(${Math.random() * 300 - 150}px, ${window.innerHeight + 50}px) rotate(${Math.random() * 720}deg)`;
+      el.style.opacity = '0';
+    });
+    setTimeout(() => el.remove(), 1500);
+  }
+}
+
+const loadedFromURL = loadDataFromURL();
+if (loadedFromURL) {
+  data = loadedFromURL;
+  mode = 'view';
+  clearLocalStorage();
+} else {
+  const fromLS = loadFromLocalStorage();
+  if (fromLS) {
+    data = fromLS;
+    mode = 'edit';
+  } else {
+    data = normalizeData({});
+    mode = 'edit';
+  }
+}
+render();
+</script>
+</body>
+</html>
