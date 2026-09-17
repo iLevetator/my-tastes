@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Мои вкусы </title>
+<title>Мои вкусы 🍰</title>
 <style>
   :root {
     --accent: #d4a574;
@@ -103,6 +103,7 @@
   .color-custom::-webkit-color-swatch-wrapper { padding: 0; }
   .color-custom::-webkit-color-swatch { border: none; border-radius: 50%; }
 
+  /* ---- Подсказки (общие стили) ---- */
   .hint-box {
     background: rgba(212, 165, 116, 0.06);
     border: 1px dashed var(--accent);
@@ -110,6 +111,10 @@
     margin-bottom: 18px;
     overflow: hidden;
     transition: all 0.3s ease;
+  }
+  .hint-box.view-hint {
+    background: rgba(111, 207, 151, 0.06);
+    border-color: var(--success);
   }
   .hint-header {
     display: flex;
@@ -124,7 +129,9 @@
     gap: 8px;
     transition: background 0.2s;
   }
+  .hint-box.view-hint .hint-header { color: var(--success); }
   .hint-header:hover { background: rgba(212, 165, 116, 0.06); }
+  .hint-box.view-hint .hint-header:hover { background: rgba(111, 207, 151, 0.06); }
   .hint-header .hint-title {
     display: flex;
     align-items: center;
@@ -188,6 +195,8 @@
     letter-spacing: 0.8px;
     font-weight: 700;
   }
+  .hint-box.view-hint .hint-item .hint-text strong { color: var(--success); }
+  .hint-box.view-hint .hint-item:hover { border-color: var(--success); }
 
   .hint-dismiss {
     display: block;
@@ -446,10 +455,12 @@ const CATEGORIES = [
   { id: 'nuts',      name: 'Орехи и сухофрукты', emoji: '🥜', group: 'Снеки' },
   { id: 'cheese',    name: 'Сыры',              emoji: '🧀', group: 'Еда' },
   { id: 'meat',      name: 'Мясные деликатесы', emoji: '🥩', group: 'Еда' },
+  { id: 'vegetables',name: 'Овощи',             emoji: '🥕', group: 'Еда' },
   { id: 'seafood',   name: 'Морепродукты',      emoji: '🦐', group: 'Еда' },
   { id: 'sushi',     name: 'Суши и роллы',      emoji: '🍣', group: 'Еда' },
   { id: 'fastfood',  name: 'Фастфуд',           emoji: '🍔', group: 'Еда' },
   { id: 'pizza',     name: 'Пицца',             emoji: '🍕', group: 'Еда' },
+  { id: 'noodles',   name: 'Лапша',             emoji: '🍜', group: 'Еда' },
   { id: 'dairy',     name: 'Молочные продукты', emoji: '🥛', group: 'Прочее' },
   { id: 'sauces',    name: 'Соусы и специи',    emoji: '🌶️', group: 'Прочее' },
   { id: 'other',     name: 'Другое',            emoji: '🎁', group: 'Прочее' },
@@ -457,6 +468,7 @@ const CATEGORIES = [
 
 const COLORS = ['#d4a574', '#2aabee', '#6fcf97', '#ff6b6b', '#a855f7', '#f59e0b'];
 const HINT_STORAGE_KEY = 'myTastesHintDismissed';
+const VIEW_HINT_STORAGE_KEY = 'myTastesViewHintDismissed';
 let data = {};
 let mode = 'edit';
 
@@ -567,10 +579,11 @@ function render() {
       <input type="color" class="color-custom" value="${data.accentColor}" id="customColor" title="Свой цвет">
     </div>`;
 
+    // ---- Подсказка для режима редактирования ----
     const hintDismissed = localStorage.getItem(HINT_STORAGE_KEY) === '1';
     html += `<div class="hint-box ${hintDismissed ? 'collapsed' : ''}" id="hintBox">
       <div class="hint-header" id="hintHeader">
-        <div class="hint-title"> Подсказка: как отмечать вкусы</div>
+        <div class="hint-title">💡 Подсказка: как отмечать вкусы</div>
         <span class="hint-toggle">▼</span>
       </div>
       <div class="hint-body">
@@ -607,7 +620,7 @@ function render() {
     </div>`;
 
     html += `<div class="notes-section">
-      <label for="notesInput" style="display:flex;align-items:center;gap:8px;font-size:0.9rem;color:var(--text-muted);margin-bottom:6px;font-weight:500;"> Общие примечания</label>
+      <label for="notesInput" style="display:flex;align-items:center;gap:8px;font-size:0.9rem;color:var(--text-muted);margin-bottom:6px;font-weight:500;">📝 Общие примечания</label>
       <textarea class="notes-textarea" id="notesInput" placeholder="Например: не люблю слишком сладкое, предпочитаю горький шоколад…" maxlength="500">${esc(data.notes)}</textarea>
     </div>`;
   } else {
@@ -621,6 +634,46 @@ function render() {
     if (data.notes && data.notes.trim()) {
       html += `<div class="view-notes">${esc(data.notes)}</div>`;
     }
+
+    // ---- Подсказка для режима просмотра ----
+    const viewHintDismissed = localStorage.getItem(VIEW_HINT_STORAGE_KEY) === '1';
+    html += `<div class="hint-box view-hint ${viewHintDismissed ? 'collapsed' : ''}" id="viewHintBox">
+      <div class="hint-header" id="viewHintHeader">
+        <div class="hint-title">🎁 Как читать этот список</div>
+        <span class="hint-toggle">▼</span>
+      </div>
+      <div class="hint-body">
+        <div class="hint-item">
+          <div class="hint-icon">⚫</div>
+          <div class="hint-text">
+            <strong>Обычный элемент</strong>
+            Человеку это нравится — можно дарить
+          </div>
+        </div>
+        <div class="hint-item">
+          <div class="hint-icon">⭕</div>
+          <div class="hint-text">
+            <strong>Зачёркнутый с красной рамкой</strong>
+            Анти-вкус: лучше не дарить, даже если кажется милым
+          </div>
+        </div>
+        <div class="hint-item">
+          <div class="hint-icon">⭐</div>
+          <div class="hint-text">
+            <strong>Со звёздочкой и золотой рамкой</strong>
+            В приоритете — самый желанный подарок!
+          </div>
+        </div>
+        <div class="hint-item">
+          <div class="hint-icon">📝</div>
+          <div class="hint-text">
+            <strong>Примечания вверху</strong>
+            Общие пожелания: аллергии, предпочтения, нюансы
+          </div>
+        </div>
+      </div>
+      <button class="hint-dismiss" id="viewHintDismiss">Больше не показывать</button>
+    </div>`;
   }
 
   let currentGroup = '';
@@ -681,8 +734,8 @@ function render() {
   } else {
     html += `<div class="actions">
       <button class="btn btn-primary" id="btnEdit">✏️ Редактировать</button>
-      <button class="btn btn-secondary" id="btnNew">🆕 Создать свои</button>
-      <button class="btn btn-secondary" id="btnCopyView">📋 Скопировать ссылку</button>
+      <button class="btn btn-secondary" id="btnNew">🆕 Создать новый список</button>
+      <button class="btn btn-secondary" id="btnCopyView">📋 Поделиться</button>
     </div>`;
   }
 
@@ -712,6 +765,7 @@ function bindEvents() {
     if (el) el.addEventListener('input', syncAndSave);
   });
 
+  // Подсказка в режиме редактирования
   const hintHeader = document.getElementById('hintHeader');
   if (hintHeader) {
     hintHeader.addEventListener('click', () => {
@@ -723,6 +777,22 @@ function bindEvents() {
     hintDismiss.addEventListener('click', () => {
       localStorage.setItem(HINT_STORAGE_KEY, '1');
       document.getElementById('hintBox').classList.add('collapsed');
+      showToast('👍 Подсказка скрыта');
+    });
+  }
+
+  // Подсказка в режиме просмотра
+  const viewHintHeader = document.getElementById('viewHintHeader');
+  if (viewHintHeader) {
+    viewHintHeader.addEventListener('click', () => {
+      document.getElementById('viewHintBox').classList.toggle('collapsed');
+    });
+  }
+  const viewHintDismiss = document.getElementById('viewHintDismiss');
+  if (viewHintDismiss) {
+    viewHintDismiss.addEventListener('click', () => {
+      localStorage.setItem(VIEW_HINT_STORAGE_KEY, '1');
+      document.getElementById('viewHintBox').classList.add('collapsed');
       showToast('👍 Подсказка скрыта');
     });
   }
@@ -793,8 +863,11 @@ function bindEvents() {
 
   if ($('btnShare')) $('btnShare').onclick = () => {
     syncAndSave();
-    $('urlDisplay').textContent = location.href;
+    const url = saveDataToURL();
+    $('urlDisplay').textContent = url;
     $('shareBox').classList.add('visible');
+    copyText(url);
+    fireConfetti();
   };
 
   if ($('btnCopy')) $('btnCopy').onclick = () => {
@@ -843,6 +916,7 @@ function bindEvents() {
       clearURL();
       clearLocalStorage();
       localStorage.removeItem(HINT_STORAGE_KEY);
+      localStorage.removeItem(VIEW_HINT_STORAGE_KEY);
       mode = 'edit';
       render();
     }
@@ -860,6 +934,7 @@ function bindEvents() {
       clearURL();
       clearLocalStorage();
       localStorage.removeItem(HINT_STORAGE_KEY);
+      localStorage.removeItem(VIEW_HINT_STORAGE_KEY);
       mode = 'edit';
       render();
     }
